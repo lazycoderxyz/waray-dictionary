@@ -357,7 +357,7 @@ export default function Home() {
     const { data, error } = await supabase
       .from('words')
       .select('*')
-      .or(`waray_word.ilike.%${searchTerm}%,english_definition.ilike.%${searchTerm}%`)
+      .ilike('waray_word', `%${searchTerm}%`)
       .limit(20);
 
     if (error) {
@@ -394,7 +394,7 @@ export default function Home() {
     supabase
       .from('words')
       .select('*')
-      .or(`waray_word.ilike.%${word}%,english_definition.ilike.%${word}%`)
+      .ilike('waray_word', `%${word}%`)
       .limit(20)
       .then(({ data, error }) => {
         if (!error && data) {
