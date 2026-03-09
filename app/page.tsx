@@ -269,6 +269,7 @@ export default function Home() {
   const [topWords, setTopWords] = useState<Word[]>([]);
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
   const [expandedContext, setExpandedContext] = useState<number | null>(null);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // AI translation states (Groq)
@@ -1136,10 +1137,64 @@ export default function Home() {
         {/* Footer */}
         <footer className="bg-gray-900/80 py-6 mt-12 backdrop-blur-sm">
           <div className="container mx-auto px-4 text-center text-gray-300">
-            <p>Waray Dictionary Project © 2025</p>
+            <p>Smart Waray Dictionary Project © 2025</p>
             <p className="text-sm mt-1">A language preservation initiative</p>
-          </div>
+            <button
+              onClick={() => setShowAboutModal(true)}
+              className="mt-3 text-blue-400 hover:text-blue-300 text-sm underline"
+            >
+              About / Credits
+            </button>
+          </div>          
         </footer>
+
+        {/* About/Credits Modal */}
+        {showAboutModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-900/90 backdrop-blur-sm rounded-2xl max-w-3xl w-full py-10 px-8 shadow-2xl">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-white mb-1">📚 Acknowledgment</h2>
+                
+                <p className="text-gray-200 mb-6">
+                  The lexical entries in this digital dictionary are based on the printed publication:
+                </p>
+                
+                <p className="text-2xl font-bold text-white italic mb-2">
+                  "Syahan nga Usa ka Yukot hin mga Pulong nga Agsob Gamiton ha Winaray"
+                </p>
+                
+                <p className="text-gray-300 mb-6">
+                  (First One Thousand Commonly Used Words in Waray: A Waray-English Dictionary for MTBMLE Educators)
+                </p>
+                
+                <p className="text-xl text-white font-semibold mb-4">
+                  Authors: Voltaire Q. Oyzon, John Mark Fullmer, Evelyn C. Cruzada
+                </p>
+                
+                <p className="text-gray-300 mb-1">
+                  A project of the Commission on Higher Education with the
+                </p>
+                <p className="text-gray-300 mb-1">
+                  National Network of Normal Schools (3NS) and Leyte Normal University
+                </p>
+                <p className="text-gray-300 mb-6">
+                  Published: 2013
+                </p>
+                
+                <p className="text-gray-400 text-sm mb-8">
+                  This digital adaptation is for educational purposes and Waray language preservation.
+                </p>
+
+                <button
+                  onClick={() => setShowAboutModal(false)}
+                  className="text-white text-3xl hover:text-gray-300 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        )}      
       </div>
     </main>
   );
