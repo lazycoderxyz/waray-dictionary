@@ -685,7 +685,7 @@ export default function Home() {
                               <img
                                 src={getImageUrl(word.image_url)}
                                 alt={word.waray_word}
-                                className="w-full h-48 object-cover rounded-lg shadow-md"
+                                className="w-full h-auto max-h-64 object-contain rounded-lg shadow-md"
                                 loading="lazy"
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
