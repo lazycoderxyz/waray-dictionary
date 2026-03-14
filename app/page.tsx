@@ -367,6 +367,11 @@ export default function Home() {
       const sortedData = sortSearchResults(data || [], searchTerm);
       setResults(sortedData);
 
+      // Track if no results found
+      if (sortedData.length === 0) {
+        trackMissingWord(searchTerm);
+      }
+
       if (sortedData && sortedData.length > 0) {
         sortedData.forEach(async (word) => {
           // Only increment search count for exact matches
@@ -404,6 +409,12 @@ export default function Home() {
         if (!error && data) {
           const sortedData = sortSearchResults(data, word);
           setResults(sortedData);
+
+           // Track if no results found
+          if (sortedData.length === 0) {
+            trackMissingWord(word);
+          }
+          
           sortedData.forEach(async (w) => {
             // Only increment search count for exact matches
             if (w.waray_word.toLowerCase() === word.trim().toLowerCase()) {
@@ -549,6 +560,35 @@ export default function Home() {
     const temp = sealionInputText;
     setSealionInputText(sealionTranslation);
     setSealionTranslation(temp);
+  };
+
+  // Track missing words that users search for but aren't in the database
+  const trackMissingWord = async (searchedWord: string) => {
+    const word = searchedWord.trim().toLowerCase();
+    if (!word) return;
+
+    // Check if word already exists in missing_words
+    const { data: existing } = await supabase
+      .from('missing_words')
+      .select('*')
+      .eq('word', word)
+      .single();
+
+    if (existing) {
+      // Update count
+      await supabase
+        .from('missing_words')
+        .update({ 
+          search_count: existing.search_count + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+    } else {
+      // Insert new missing word
+      await supabase
+        .from('missing_words')
+        .insert({ word: word });
+    }
   };
 
   return (
