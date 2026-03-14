@@ -369,10 +369,13 @@ export default function Home() {
 
       if (sortedData && sortedData.length > 0) {
         sortedData.forEach(async (word) => {
-          await supabase
-            .from('words')
-            .update({ search_count: (word.search_count || 0) + 1 })
-            .eq('id', word.id);
+          // Only increment search count for exact matches
+          if (word.waray_word.toLowerCase() === searchTerm.trim().toLowerCase()) {
+            await supabase
+              .from('words')
+              .update({ search_count: (word.search_count || 0) + 1 })
+              .eq('id', word.id);
+          }
         });
       }
     }
@@ -402,10 +405,13 @@ export default function Home() {
           const sortedData = sortSearchResults(data, word);
           setResults(sortedData);
           sortedData.forEach(async (w) => {
-            await supabase
-              .from('words')
-              .update({ search_count: (w.search_count || 0) + 1 })
-              .eq('id', w.id);
+            // Only increment search count for exact matches
+            if (w.waray_word.toLowerCase() === word.trim().toLowerCase()) {
+              await supabase
+                .from('words')
+                .update({ search_count: (w.search_count || 0) + 1 })
+                .eq('id', w.id);
+            }
           });
         }
         setIsLoading(false);
@@ -1153,9 +1159,9 @@ export default function Home() {
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-900/90 backdrop-blur-sm rounded-2xl max-w-3xl w-full py-10 px-8 shadow-2xl">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-1">📚 Acknowledgment</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">📚 Acknowledgment</h2>
                 
-                <p className="text-gray-200 mb-6">
+                <p className="text-gray-200 mb-4">
                   The lexical entries in this digital dictionary are based on the printed publication:
                 </p>
                 
@@ -1194,7 +1200,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        )}      
+        )}    
       </div>
     </main>
   );
