@@ -270,8 +270,11 @@ export default function Home() {
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
   const [expandedContext, setExpandedContext] = useState<number | null>(null);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const [suggestions, setSuggestions] = useState<Word[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   // AI translation states (Groq)
   const [aiInputText, setAiInputText] = useState('');
   const [aiTranslation, setAiTranslation] = useState('');
@@ -345,6 +348,72 @@ export default function Home() {
       // Priority 5: Alphabetical order
       return aWord.localeCompare(bWord);
     });
+  };
+
+  // Autocomplete suggestions as user types
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const { data } = await supabase
+      .from('words')
+      .select('*')
+      .ilike('waray_word', `%${value}%`)
+      .limit(10);
+
+    if (data && data.length > 0) {
+      // Sort: words starting with search term come first
+      const searchLower = value.trim().toLowerCase();
+      const sorted = [...data].sort((a, b) => {
+        const aStarts = a.waray_word.toLowerCase().startsWith(searchLower);
+        const bStarts = b.waray_word.toLowerCase().startsWith(searchLower);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        return a.waray_word.localeCompare(b.waray_word);
+      });
+      setSuggestions(sorted.slice(0, 8));
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle clicking a suggestion
+  const handleSuggestionClick = (word: string) => {
+    setSearchTerm(word);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    setHasSearched(true);
+    setIsLoading(true);
+    setExpandedContext(null);
+
+    supabase
+      .from('words')
+      .select('*')
+      .ilike('waray_word', `%${word}%`)
+      .limit(20)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          const sortedData = sortSearchResults(data, word);
+          setResults(sortedData);
+          sortedData.forEach(async (w) => {
+            if (w.waray_word.toLowerCase() === word.trim().toLowerCase()) {
+              await supabase
+                .from('words')
+                .update({ search_count: (w.search_count || 0) + 1 })
+                .eq('id', w.id);
+            }
+          });
+        }
+        setIsLoading(false);
+      });
   };
 
   // Search handlers
@@ -655,14 +724,34 @@ export default function Home() {
                     Search for a Waray word or English translation
                   </label>
                   <div className="flex gap-3">
+                    <div className="relative flex-1">
                     <input
                       type="text"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
+                      onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                       placeholder="e.g., maupay, adlaw, hello, sun..."
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    {/*Autocomplete Suggestions Dropdown */}
+                    {showSuggestions && suggestions.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {suggestions.map((word) => (
+                            <div
+                              key={word.id}
+                              onMouseDown={() => handleSuggestionClick(word.waray_word)}
+                              className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            >
+                              <span className="font-semibold text-blue-600">{word.waray_word}</span>
+                              <span className="text-gray-500 text-sm ml-2">— {word.english_definition?.slice(0, 50)}...</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>               
+
                     <button
                       onClick={handleSearch}
                       disabled={isLoading}
