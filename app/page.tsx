@@ -270,6 +270,7 @@ export default function Home() {
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
   const [expandedContext, setExpandedContext] = useState<number | null>(null);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   const [suggestions, setSuggestions] = useState<Word[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -310,6 +311,17 @@ export default function Home() {
 
     fetchTopWords();
   }, []);
+
+  // Close image lightbox with Esc key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExpandedImage(null);
+    };
+    if (expandedImage) {
+      window.addEventListener('keydown', handleEsc);
+      return () => window.removeEventListener('keydown', handleEsc);
+    }
+  }, [expandedImage]);
 
   // Helper function to sort search results
   const sortSearchResults = (data: Word[], term: string): Word[] => {
@@ -821,12 +833,16 @@ export default function Home() {
                               <img
                                 src={getImageUrl(word.image_url)}
                                 alt={word.waray_word}
-                                className="w-full h-auto max-h-64 object-contain rounded-lg shadow-md"
+                                className="w-full h-auto max-h-64 object-contain rounded-lg shadow-md cursor-zoom-in hover:opacity-90 hover:scale-105 transition-all duration-200"
                                 loading="lazy"
+                                onClick={() => setExpandedImage(getImageUrl(word.image_url))}
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
                                 }}
                               />
+                              <p className="text-xs text-gray-500 text-center mt-1 italic">
+                                🔍 Click to enlarge
+                              </p>
                             </div>
                           )}
 
@@ -933,6 +949,16 @@ export default function Home() {
                                     className="w-full mt-2 text-center py-2 text-amber-600 hover:text-amber-800 text-sm font-medium transition-colors"
                                   >
                                     ▼ Click to read full cultural context
+                                  </button>
+                                )}
+
+                                {/* Show less button at the bottom when expanded */}
+                                {expandedContext === word.id && (
+                                  <button 
+                                    onClick={() => toggleContext(word.id)}
+                                    className="w-full mt-4 text-center py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 text-sm font-medium rounded-lg transition-colors border border-amber-300"
+                                  >
+                                    ▲ Show less
                                   </button>
                                 )}
                               </div>
@@ -1328,6 +1354,31 @@ export default function Home() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Image Lightbox Modal */}
+        {expandedImage && (
+          <div 
+            className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 cursor-zoom-out"
+            onClick={() => setExpandedImage(null)}
+          >
+            <button
+              onClick={() => setExpandedImage(null)}
+              className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
+            <img
+              src={expandedImage}
+              alt="Expanded view"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm bg-black/50 px-4 py-2 rounded-full">
+              Click anywhere outside the image to close
+            </p>
           </div>
         )}    
       </div>
