@@ -1054,6 +1054,7 @@ export default function Home() {
                   <div className="text-center text-white mb-8">
                     <p className="text-lg drop-shadow-lg">Enter text above for AI-powered translation</p>
                     <p className="mt-2 drop-shadow-lg text-sm">Supports both Waray → English and English → Waray</p>
+                    
                   </div>
                 )}
 
@@ -1096,6 +1097,7 @@ export default function Home() {
 
                     <div className="bg-green-50 rounded-lg p-3 text-sm text-green-800">
                       <strong>✨ Quick Translation:</strong> Fast and simple translations. For detailed explanations with grammar & cultural context, try the 🦁 SeaLion AI tab!
+                      <strong>✨ NOTE: </strong> AI translations are automatically generated and may not fully capture Waray linguistic nuances, cultural meanings, or regional variations. Please refer to dictionary entries for verified definitions and context 
                     </div>
                   </div>
                 )}
@@ -1288,6 +1290,7 @@ export default function Home() {
                   </ul>
                   <p className="text-xs text-gray-500 mt-3">
                     Powered by AI Singapore's Gemma SEA-LION v4 27B model, trained specifically on Southeast Asian languages.
+                    NOTE: AI translations are automatically generated and may not fully capture Waray linguistic nuances, cultural meanings, or regional variations. Please refer to dictionary entries for verified definitions and context.
                   </p>
                 </div>
               </>

@@ -60,7 +60,7 @@ Rules:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -71,9 +71,16 @@ Rules:
     });
 
     if (!response.ok) {
+      //const errorData = await response.text();
+      //console.error('Groq API error:', errorData);
+      //return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
       const errorData = await response.text();
       console.error('Groq API error:', errorData);
-      return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
+      
+      return NextResponse.json(
+        { error: errorData },
+        { status: 500 }
+      );    
     }
 
     const data = await response.json();
@@ -82,7 +89,19 @@ Rules:
     return NextResponse.json({ translation });
 
   } catch (error) {
-    console.error('Translation error:', error);
-    return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
+  //  console.error('Translation error:', error);
+  //  return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
+  console.error("translate error:", error);
+
+  return NextResponse.json(
+    {
+      error:
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error)
+    },
+    {status: 500} 
+  );
+
   }
 }
